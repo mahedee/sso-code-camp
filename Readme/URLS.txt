@@ -1,5 +1,6 @@
 Necessary URL
 
 https://code-maze.com/identityserver4-integration-aspnetcore/
+https://code-maze.com/identityserver4-ui-webapi-basic-security/
 
 https://jwt.ms/

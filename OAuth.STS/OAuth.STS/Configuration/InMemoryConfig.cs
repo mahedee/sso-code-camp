@@ -15,6 +15,32 @@ namespace OAuth.STS.Configuration
             };
 
 
+        public static IEnumerable<ApiScope> GetApiScopes() =>
+            new List<ApiScope> { new ApiScope("companyApi", "CompanyEmployee API") };
+
+        public static IEnumerable<ApiResource> GetApiResources() =>
+            new List<ApiResource>
+            {
+                new ApiResource("companyApi", "CompanyEmployee API")
+                {
+                    Scopes = {"companyApi"}
+                }
+            };
+
+
+        public static IEnumerable<Client> GetClients() =>
+            new List<Client>
+            {
+                new Client
+                {
+                    ClientId = "company-employee",
+                    ClientSecrets = new [] {new Secret("thisisasecret".Sha512())},
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
+                    AllowedScopes = {IdentityServerConstants.StandardScopes.OpenId, "companyApi"}
+                }
+            };
+
+
         public static List<TestUser> GetUsers() =>
             new List<TestUser>
             {
@@ -43,16 +69,5 @@ namespace OAuth.STS.Configuration
                 }
             };
 
-        public static IEnumerable<Client> GetClients() =>
-            new List<Client>
-            {
-                new Client
-                {
-                    ClientId = "company-employee",
-                    ClientSecrets = new [] {new Secret("thisisasecret".Sha512())},
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials,
-                    AllowedScopes = {IdentityServerConstants.StandardScopes.OpenId}
-                }
-            };
     }
 }

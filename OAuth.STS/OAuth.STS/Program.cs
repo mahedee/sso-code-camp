@@ -7,10 +7,14 @@ builder.Services.AddControllersWithViews();
 
 // Add identity server to the application
 builder.Services.AddIdentityServer()
+    .AddInMemoryApiScopes(InMemoryConfig.GetApiScopes())
+    .AddInMemoryApiResources(InMemoryConfig.GetApiResources())
     .AddInMemoryIdentityResources(InMemoryConfig.GetIdentityResources())
     .AddTestUsers(InMemoryConfig.GetUsers())
     .AddInMemoryClients(InMemoryConfig.GetClients())
     .AddDeveloperSigningCredential();
+
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -22,15 +26,18 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Add identity server to request pipeline
-app.UseIdentityServer();
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add identity server to request pipeline
+app.UseIdentityServer();
+
 app.UseAuthorization();
+
 
 app.MapControllerRoute(
     name: "default",
