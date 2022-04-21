@@ -4,3 +4,7 @@ https://code-maze.com/identityserver4-integration-aspnetcore/
 https://code-maze.com/identityserver4-ui-webapi-basic-security/
 
 https://jwt.ms/
+
+dotnet new is4ui
+
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IdentityServer/IdentityServer4.Quickstart.UI/main/getmain.ps1'))
