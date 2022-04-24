@@ -3,8 +3,6 @@
 
 
 using IdentityServer4.Services;
-using ISTS.Application.ViewModels.Account;
-using ISTS.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-namespace ISTS.Controllers
+namespace IdentityServerHost.Quickstart.UI
 {
     [SecurityHeaders]
     [AllowAnonymous]

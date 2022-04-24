@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ISTS.Application\ISTS.Application.csproj" />
     <ProjectReference Include="..\ISTS.Core\ISTS.Core.csproj" />
   </ItemGroup>
 

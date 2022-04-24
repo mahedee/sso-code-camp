@@ -4,13 +4,9 @@ using IdentityServer4.Events;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using IdentityServer4.Test;
-using ISTS.Core.Entities.Identity;
-using ISTS.Extensions;
-using ISTS.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,33 +15,33 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace ISTS.Controllers
+namespace IdentityServerHost.Quickstart.UI
 {
     [SecurityHeaders]
     [AllowAnonymous]
     public class ExternalController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly TestUserStore _users;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
-        private readonly IEventService _events;
         private readonly ILogger<ExternalController> _logger;
+        private readonly IEventService _events;
 
         public ExternalController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            ILogger<ExternalController> logger)
+            ILogger<ExternalController> logger,
+            TestUserStore users = null)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            // if the TestUserStore is not in DI, then we'll just use the global users collection
+            // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
+            _users = users ?? new TestUserStore(TestUsers.Users);
+
             _interaction = interaction;
             _clientStore = clientStore;
-            _events = events;
             _logger = logger;
+            _events = events;
         }
 
         /// <summary>
@@ -62,20 +58,20 @@ namespace ISTS.Controllers
                 // user might have clicked on a malicious link - should be logged
                 throw new Exception("invalid return URL");
             }
-
+            
             // start challenge and roundtrip the return URL and scheme 
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action(nameof(Callback)),
+                RedirectUri = Url.Action(nameof(Callback)), 
                 Items =
                 {
-                    { "returnUrl", returnUrl },
+                    { "returnUrl", returnUrl }, 
                     { "scheme", scheme },
                 }
             };
 
             return Challenge(props, scheme);
-
+            
         }
 
         /// <summary>
@@ -98,13 +94,13 @@ namespace ISTS.Controllers
             }
 
             // lookup our user and external provider info
-            var (user, provider, providerUserId, claims) = await FindUserFromExternalProviderAsync(result);
+            var (user, provider, providerUserId, claims) = FindUserFromExternalProvider(result);
             if (user == null)
             {
                 // this might be where you might initiate a custom workflow for user registration
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
-                user = await AutoProvisionUserAsync(provider, providerUserId, claims);
+                user = AutoProvisionUser(provider, providerUserId, claims);
             }
 
             // this allows us to collect any additional claims or properties
@@ -113,17 +109,11 @@ namespace ISTS.Controllers
             var additionalLocalClaims = new List<Claim>();
             var localSignInProps = new AuthenticationProperties();
             ProcessLoginCallback(result, additionalLocalClaims, localSignInProps);
-
+            
             // issue authentication cookie for user
-            // we must issue the cookie maually, and can't use the SignInManager because
-            // it doesn't expose an API to issue additional claims from the login workflow
-            var principal = await _signInManager.CreateUserPrincipalAsync(user);
-            additionalLocalClaims.AddRange(principal.Claims);
-            var name = principal.FindFirst(JwtClaimTypes.Name)?.Value ?? user.Id;
-
-            var isuser = new IdentityServerUser(user.Id)
+            var isuser = new IdentityServerUser(user.SubjectId)
             {
-                DisplayName = name,
+                DisplayName = user.Username,
                 IdentityProvider = provider,
                 AdditionalClaims = additionalLocalClaims
             };
@@ -138,7 +128,7 @@ namespace ISTS.Controllers
 
             // check if external login is in the context of an OIDC request
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id, name, true, context?.Client.ClientId));
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId, user.Username, true, context?.Client.ClientId));
 
             if (context != null)
             {
@@ -153,8 +143,7 @@ namespace ISTS.Controllers
             return Redirect(returnUrl);
         }
 
-        private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)>
-            FindUserFromExternalProviderAsync(AuthenticateResult result)
+        private (TestUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -173,67 +162,14 @@ namespace ISTS.Controllers
             var providerUserId = userIdClaim.Value;
 
             // find external user
-            var user = await _userManager.FindByLoginAsync(provider, providerUserId);
+            var user = _users.FindByExternalProvider(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
         }
 
-        private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
+        private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
         {
-            // create a list of claims that we want to transfer into our store
-            var filtered = new List<Claim>();
-
-            // user's display name
-            var name = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
-                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-            if (name != null)
-            {
-                filtered.Add(new Claim(JwtClaimTypes.Name, name));
-            }
-            else
-            {
-                var first = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
-                var last = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
-                    claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
-                if (first != null && last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first + " " + last));
-                }
-                else if (first != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, first));
-                }
-                else if (last != null)
-                {
-                    filtered.Add(new Claim(JwtClaimTypes.Name, last));
-                }
-            }
-
-            // email
-            var email = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value ??
-               claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            if (email != null)
-            {
-                filtered.Add(new Claim(JwtClaimTypes.Email, email));
-            }
-
-            var user = new ApplicationUser
-            {
-                UserName = Guid.NewGuid().ToString(),
-            };
-            var identityResult = await _userManager.CreateAsync(user);
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-
-            if (filtered.Any())
-            {
-                identityResult = await _userManager.AddClaimsAsync(user, filtered);
-                if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-            }
-
-            identityResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
-            if (!identityResult.Succeeded) throw new Exception(identityResult.Errors.First().Description);
-
+            var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
             return user;
         }
 
