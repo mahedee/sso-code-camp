@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISTS.Core", "ISTS.Core\ISTS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISTS.Application", "ISTS.Application\ISTS.Application.csproj", "{901C4058-3AE1-4929-9FC6-674DEE96D61B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISTS.Infrastructure", "ISTS.Infrastructure\ISTS.Infrastructure.csproj", "{8B183B96-EAC6-45DB-800C-1DD361F49E65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{901C4058-3AE1-4929-9FC6-674DEE96D61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{901C4058-3AE1-4929-9FC6-674DEE96D61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{901C4058-3AE1-4929-9FC6-674DEE96D61B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B183B96-EAC6-45DB-800C-1DD361F49E65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B183B96-EAC6-45DB-800C-1DD361F49E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B183B96-EAC6-45DB-800C-1DD361F49E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B183B96-EAC6-45DB-800C-1DD361F49E65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
