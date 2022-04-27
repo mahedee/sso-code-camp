@@ -8,9 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ISTS.Application\ISTS.Application.csproj" />
     <ProjectReference Include="..\ISTS.Core\ISTS.Core.csproj" />
   </ItemGroup>
 
