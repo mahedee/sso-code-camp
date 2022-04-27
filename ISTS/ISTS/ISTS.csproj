@@ -57,6 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ISTS.Application\ISTS.Application.csproj" />
     <ProjectReference Include="..\ISTS.Core\ISTS.Core.csproj" />
+    <ProjectReference Include="..\ISTS.Infrastructure\ISTS.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

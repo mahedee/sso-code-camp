@@ -1,3 +1,5 @@
+using ISTS.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +12,10 @@ builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
 
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddInfrastructure(builder.Configuration).AddIdentity(builder.Environment).AddRepositories();
+
+
 
 var app = builder.Build();
 
