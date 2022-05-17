@@ -1,0 +1,1 @@
+https://support.jetglobal.com/hc/en-us/articles/235636308-How-To-Create-a-SHA-256-Self-Signed-Certificate
