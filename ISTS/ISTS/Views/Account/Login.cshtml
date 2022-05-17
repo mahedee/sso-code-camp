@@ -1,0 +1,84 @@
+﻿@model ISTS.Application.ViewModels.Account.LoginViewModel
+
+@{
+    Layout = "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AMBS-Login</title>
+    <link href="~/lib/bootstrap5/css/bootstrap.css" rel="stylesheet">
+</head>
+
+<body>
+    <section class="h-100">
+        <div class="container h-100">
+            <div class="row justify-content-sm-center h-100">
+                <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
+                    <div class="text-center my-5">
+                        <img src="~/LoginLogo.png" alt="logo" width="100">
+                    </div>
+                    <div class="card shadow-lg">
+                        <div class="card-body p-5">
+                            @if (Model.EnableLocalLogin)
+                            {
+                                    <h1 class="fs-4 card-title fw-bold mb-4">Login</h1>
+                                    <partial name="_ValidationSummary" />
+                                    <form method="post" asp-route="Login" asp-antiforgery="true" class="needs-validation" novalidate="" autocomplete="off">
+                                        <input type="hidden" asp-for="ReturnUrl" />
+                                        <div class="mb-3">
+                                            <label class="mb-2 text-muted" for="userName">Username</label>
+                                            <input id="userName" class="form-control" placeholder="Username" asp-for="Username" required autofocus>
+                                            <div class="invalid-feedback">
+                                                Username can not be empty
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div class="mb-2 w-100">
+                                                <label class="text-muted" for="password">Password</label>
+                                                <a href="#" class="float-end">
+                                                    Forgot Password?
+                                                </a>
+                                            </div>
+                                            <input type="password" class="form-control" id="password" placeholder="Password" asp-for="Password" required autocomplete="off">
+                                            <div class="invalid-feedback">
+                                                Password can not be empty
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="remember" id="remember" asp-for="RememberLogin" class="form-check-input">
+                                                <label for="remember" class="form-check-label">Remember Me</label>
+                                            </div>
+                                            <button name="button" value="login" type="submit" class="btn btn-primary ms-auto">
+                                                Login
+                                            </button>
+                                        </div>
+                                    </form>
+                            }
+                            @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+                            {
+                                    <div class="alert alert-warning">
+                                        <strong>Invalid login request</strong>
+                                        There are no login schemes configured for this request.
+                                    </div>
+                            }
+
+                        </div>
+                    </div>
+                    <div class="text-center mt-5 text-muted">
+                        Copyright &copy; @DateTime.Now.Year &mdash; ASAI
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="~/js/login.js"></script>
+</body>
+</html>
+

@@ -51,13 +51,13 @@ namespace ISTS.Infrastructure
         public static IServiceCollection AddIdentity(this IServiceCollection services, IWebHostEnvironment env)
         {
             X509Certificate2? cert = null;
-            using (X509Store certStore = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+            using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.LocalMachine))
             {
                 certStore.Open(OpenFlags.ReadOnly);
                 X509Certificate2Collection certCollection = certStore.Certificates.Find(
                     X509FindType.FindByThumbprint,
                     // Replace below with your cert's thumbprint
-                    "AB615AD0A43A86BA5E4ED338E6C62BA3A7344A08",
+                    "D39BDBF37A10EF291AB2C46521426D0BB09662D9",
                     false);
                 // Get the first cert with the thumbprint
                 if (certCollection.Count > 0)
@@ -69,7 +69,7 @@ namespace ISTS.Infrastructure
             // Fallback to local file for development
             if (cert == null)
             {
-                cert = new X509Certificate2(Path.Combine(env.ContentRootPath, "Cert/example.pfx"), "123456789");
+                //cert = new X509Certificate2(Path.Combine(env.ContentRootPath, "Cert/example.pfx"), "123456789");
             }
 
             var builder = services.AddIdentityServer(options =>
