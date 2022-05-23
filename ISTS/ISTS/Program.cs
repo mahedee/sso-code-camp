@@ -17,7 +17,7 @@ builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddInfrastructure(builder.Configuration).AddIdentity(builder.Environment).AddRepositories();
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment).AddIdentity(builder.Environment).AddRepositories();
 
 
 SeedData.EnsureSeedData(builder.Configuration.GetConnectionString("IdentityDbConnection"));

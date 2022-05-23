@@ -18,9 +18,9 @@ namespace ISTS.Infrastructure
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
-            RegisterDbContexts<ApplicationDbContext, IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext>(services, configuration);
+            RegisterDbContexts<ApplicationDbContext, IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext>(services, configuration, env);
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -112,30 +112,47 @@ namespace ISTS.Infrastructure
 
 
 
-        private static IServiceCollection RegisterDbContexts<TApplicationIdentityDbContext, TIdentityServerConfigurationDbContext, TIdentityServerPersistedGrantDbContext>(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection RegisterDbContexts<TApplicationIdentityDbContext, TIdentityServerConfigurationDbContext, TIdentityServerPersistedGrantDbContext>(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         where TApplicationIdentityDbContext : DbContext
         where TIdentityServerConfigurationDbContext : DbContext, IAdminConfigurationDbContext
         where TIdentityServerPersistedGrantDbContext : DbContext, IAdminPersistedGrantDbContext
         {
-            var applicationIdentityConnectionString =
-                configuration.GetConnectionString(ConfigurationConstants.ApplicationIdentityConnectionStringKey);
-            var adminConfigurationConnectionString =
-                configuration.GetConnectionString(ConfigurationConstants.AdminConfigurationConnectionStringKey);
-            var persistedConfigurationConnectionString =
-                configuration.GetConnectionString(ConfigurationConstants.PersistedConfigurationConnectionStringKey);
+            if (env.EnvironmentName == "IntegrationTest")
+            {
+                var dbName = "ApplicationDb";
+                services.AddDbContext<ApplicationDbContext>(opt => opt
+                    .UseInMemoryDatabase(dbName));
 
-            services.AddDbContext<TApplicationIdentityDbContext>(options =>
-                options
-                    .UseSqlServer(
-                        applicationIdentityConnectionString,
-                        b => b.MigrationsAssembly(typeof(TApplicationIdentityDbContext).Assembly.FullName))
-            );
+                services.AddConfigurationDbContext<TIdentityServerConfigurationDbContext>(options => options.ConfigureDbContext = b =>
+                    b.UseInMemoryDatabase(dbName));
 
-            services.AddConfigurationDbContext<TIdentityServerConfigurationDbContext>(options => options.ConfigureDbContext = b =>
-                b.UseSqlServer(adminConfigurationConnectionString, sql => sql.MigrationsAssembly(typeof(TApplicationIdentityDbContext).Assembly.FullName)));
+                services.AddOperationalDbContext<TIdentityServerPersistedGrantDbContext>(options => options.ConfigureDbContext = b =>
+                    b.UseInMemoryDatabase(dbName));
 
-            services.AddOperationalDbContext<TIdentityServerPersistedGrantDbContext>(options => options.ConfigureDbContext = b =>
-                b.UseSqlServer(persistedConfigurationConnectionString, sql => sql.MigrationsAssembly(typeof(TIdentityServerPersistedGrantDbContext).Assembly.FullName)));
+            }
+            else
+            {
+                var applicationIdentityConnectionString =
+                    configuration.GetConnectionString(ConfigurationConstants.ApplicationIdentityConnectionStringKey);
+                var adminConfigurationConnectionString =
+                    configuration.GetConnectionString(ConfigurationConstants.AdminConfigurationConnectionStringKey);
+                var persistedConfigurationConnectionString =
+                    configuration.GetConnectionString(ConfigurationConstants.PersistedConfigurationConnectionStringKey);
+
+                services.AddDbContext<TApplicationIdentityDbContext>(options =>
+                    options
+                        .UseSqlServer(
+                            applicationIdentityConnectionString,
+                            b => b.MigrationsAssembly(typeof(TApplicationIdentityDbContext).Assembly.FullName))
+                );
+
+                services.AddConfigurationDbContext<TIdentityServerConfigurationDbContext>(options => options.ConfigureDbContext = b =>
+                    b.UseSqlServer(adminConfigurationConnectionString, sql => sql.MigrationsAssembly(typeof(TApplicationIdentityDbContext).Assembly.FullName)));
+
+                services.AddOperationalDbContext<TIdentityServerPersistedGrantDbContext>(options => options.ConfigureDbContext = b =>
+                    b.UseSqlServer(persistedConfigurationConnectionString, sql => sql.MigrationsAssembly(typeof(TIdentityServerPersistedGrantDbContext).Assembly.FullName)));
+
+            }
 
             services.AddScoped<IAdminConfigurationDbContext, IdentityServerConfigurationDbContext>();
             services.AddScoped<IAdminPersistedGrantDbContext, IdentityServerPersistedGrantDbContext>();
