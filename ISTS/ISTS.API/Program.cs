@@ -6,6 +6,7 @@ using ISTS.Application.Common.Interfaces;
 using ISTS.Application.Common.Models;
 using ISTS.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -84,20 +85,61 @@ builder.Services.AddAuthentication(options =>
             ServerCertificateCustomValidationCallback = delegate { return true; }
         };
     });
-builder.Services.AddSwaggerGen();
+
+
+//builder.Services.AddSwaggerGen();
+
+// Add swagger service
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = identityConfiguration.ApiDisplayName, Version = "v1" });
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri($"{identityConfiguration.Authority}connect/authorize"),
+                TokenUrl = new Uri($"{identityConfiguration.Authority}connect/token"),
+                Scopes = new Dictionary<string, string> {
+                    {identityConfiguration.ApiName, identityConfiguration.ApiDisplayName},
+                    {"openid"," Open Id" },
+                    {"profile", "Profile"}
+                }
+            }
+        }
+    });
+
+    options.OperationFilter<AuthorizeCheckOperationFilter>();
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
+app.UseRouting();
+app.UseCors("CorsPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAuthorization();
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", identityConfiguration.ApiDisplayName);
+    c.OAuthClientId(identityConfiguration.SwaggerUIClientId);
+    c.OAuthAppName(identityConfiguration.ApiDisplayName);
+    c.OAuthUsePkce();
+});
 
 app.MapControllers();
 

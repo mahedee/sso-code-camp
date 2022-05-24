@@ -23,7 +23,7 @@ namespace ISTS.API.Controllers
             _mediator = mediator;
         }
 
-        [Permission(Permission = PermissionConstants.ReadClients)]
+        //[Permission(Permission = PermissionConstants.ReadClients)]
         [HttpGet]
         [ProducesDefaultResponseType(typeof(IEnumerable<ClientDto>))]
         public async Task<IActionResult> GetClients([FromQuery] GetClientQuery query)
@@ -31,7 +31,7 @@ namespace ISTS.API.Controllers
             return Ok(await _mediator.Send(query));
         }
 
-        [Permission(Permission = PermissionConstants.ReadClients)]
+        //[Permission(Permission = PermissionConstants.ReadClients)]
         [HttpGet("{clientId:int}")]
         [ProducesDefaultResponseType(typeof(ClientDto))]
         public async Task<IActionResult> GetClient(int clientId)
@@ -39,7 +39,7 @@ namespace ISTS.API.Controllers
             return Ok(await _mediator.Send(new GetClientByIdQuery(clientId)));
         }
 
-        [Permission(Permission = PermissionConstants.ReadClients)]
+       // [Permission(Permission = PermissionConstants.ReadClients)]
         [HttpGet("details-by-client-id/{clientId}")]
         [ProducesDefaultResponseType(typeof(ClientDto))]
         public async Task<IActionResult> GetClient(string clientId)
@@ -47,7 +47,7 @@ namespace ISTS.API.Controllers
             return Ok(await _mediator.Send(new GetClientDetailsByClientIdQuery(clientId)));
         }
 
-        [Permission(Permission = PermissionConstants.CreateClients)]
+        //[Permission(Permission = PermissionConstants.CreateClients)]
         [HttpPost]
         [ProducesDefaultResponseType(typeof(ClientDto))]
         public async Task<IActionResult> CreateClient([FromBody] CreateClientCommand command)
@@ -55,7 +55,7 @@ namespace ISTS.API.Controllers
             return Ok(await _mediator.Send(command));
         }
 
-        [Permission(Permission = PermissionConstants.UpdateClients)]
+        //[Permission(Permission = PermissionConstants.UpdateClients)]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateClient(int id, [FromBody] UpdateClientCommand command)
         {
@@ -63,7 +63,7 @@ namespace ISTS.API.Controllers
             return Ok(await _mediator.Send(command));
         }
 
-        [Permission(Permission = PermissionConstants.DeleteClients)]
+        //[Permission(Permission = PermissionConstants.DeleteClients)]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteClient(int id)
         {

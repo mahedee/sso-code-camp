@@ -78,8 +78,10 @@ namespace ISTS.Application
                     "roles"
                 },
                 AllowOfflineAccess = true,
-                RedirectUris = { "https://localhost:44389/swagger/oauth2-redirect.html" },
-                AllowedCorsOrigins = { "https://localhost:44389" },
+
+                // API URL
+                RedirectUris = { "https://localhost:7270/swagger/oauth2-redirect.html" },
+                AllowedCorsOrigins = { "https://localhost:7270" }, //Allowed Cors originmust be without trailing slash
                 RequirePkce = true,
                 RequireClientSecret = true,
             },
